@@ -5,7 +5,7 @@ const app = express();
 app.listen(3000);
 console.log('Server is online.');
 
-app.post('/', function(req, res) {
+app.post('/line-webhook', function(req, res) {
     res.send('Slack send start');
 
     const { WebClient } = require('@slack/web-api');
