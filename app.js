@@ -42,8 +42,10 @@ function createTextByEvent(message, timestamp) {
     text += '-----\n';
     text += message;
     text += '\n-----\n';
-    const date = new Date(timestamp).toLocaleString({ timeZone: 'Asia/Tokyo' });
-    text += date.toString();
+
+    // @todo change format to JST
+    //const date = new Date(timestamp);
+    //text += date.toString();
 
     return text;
 }
