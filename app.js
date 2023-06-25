@@ -23,15 +23,11 @@ app.post('/line-webhook', function(req, res) {
         const message = event.message;
         if (message.type === 'text') {
             const text = createTextByEvent(message.text, event.timestamp);
-            console.log(text);
-
             sendToSlack(token, channel, text);
         }
         else {
             let msg = 'その他タイプのメッセージです。[' + message.type + ']';
             const text = createTextByEvent(msg, event.timestamp);
-            console.log(text);
-
             sendToSlack(token, channel, text);
         }
     }
@@ -59,8 +55,6 @@ function sendToSlack(oAuthToken, channel, message) {
 
         const client = new WebClient(token);
         const response = await client.chat.postMessage({ channel, text });
-
-        console.log(response.ok);
     })();
 }
 
