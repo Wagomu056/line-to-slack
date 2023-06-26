@@ -1,15 +1,19 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const LineForwarder = require('./libs/line-forwarder.js');
+const SlackSender = require('./libs/slack-sender.js');
+
+const TOKEN = process.env.TARGET_SLACK_OAUTH;
+const CHANNEL = process.env.TARGET_SLACK_CHANNEL;
+
+const slackSender = new SlackSender(TOKEN);
+const lineForwarder = new LineForwarder(slackSender);
 
 const app = express();
-
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(bodyParser.json());
-
-const token = process.env.TARGET_SLACK_OAUTH;
-const channel = process.env.TARGET_SLACK_CHANNEL;
 
 app.listen(3000);
 console.log('Server is online.');
@@ -17,44 +21,7 @@ console.log('Server is online.');
 app.post('/line-webhook', function(req, res) {
     res.send('Slack send start');
 
-    // Pars from body
     const event = req.body.events[0];
-    if (event.type === 'message') {
-        const message = event.message;
-        if (message.type === 'text') {
-            const text = createTextByEvent(message.text, event.timestamp);
-            sendToSlack(token, channel, text);
-        }
-        else {
-            let msg = 'その他タイプのメッセージです。[' + message.type + ']';
-            const text = createTextByEvent(msg, event.timestamp);
-            sendToSlack(token, channel, text);
-        }
-    }
+    lineForwarder.forwardEvent(CHANNEL, event);
 })
-
-function createTextByEvent(message, timestamp) {
-    let text = 'LINEから転送\n';
-    text += '-----\n';
-    text += message;
-    text += '\n-----\n';
-
-    // @todo change format to JST
-    //const date = new Date(timestamp);
-    //text += date.toString();
-
-    return text;
-}
-
-function sendToSlack(oAuthToken, channel, message) {
-    const { WebClient } = require('@slack/web-api');
-    (async () => {
-        const token = process.env.TARGET_SLACK_OAUTH;
-        const channel = process.env.TARGET_SLACK_CHANNEL;
-        const text = message;
-
-        const client = new WebClient(token);
-        const response = await client.chat.postMessage({ channel, text });
-    })();
-}
 
